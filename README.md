@@ -1,6 +1,6 @@
 ### Olá, me chamo Pablo Mickael Quevedo!!!
 
-- 🔭 Atualmente estou procurando uma vaga de emprego para Desenvolvedor.
+- 🔭 Atualmente estou tentando me aperfeiçoar mais como programador.
 - 🌱 Estou estudando programação Back End e Front End, Sistemas Operacionais, Banco de dados, Virtualização e Armazenamento em nuvem.
 
 <div>
