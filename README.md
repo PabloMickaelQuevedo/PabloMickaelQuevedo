@@ -1,7 +1,7 @@
 ### Olá, me chamo Pablo Mickael Quevedo!!!
 
 - 🔭 Atualmente estou tentando me aperfeiçoar mais como programador.
-- 🌱 Estou estudando programação Back End e Front End, Sistemas Operacionais, Banco de dados, Virtualização e Armazenamento em nuvem.
+- 🌱 Estou estudando programação Back End e Front End, me especializando em .Net Core (C#).
 
 <div>
   <a href="https://github.com/PabloMickaelQuevedo">
