@@ -1,7 +1,8 @@
 ### Olá, me chamo Pablo Mickael Quevedo!!!
 
-- 🔭 Atualmente estou tentando me aperfeiçoar mais como programador.
-- 🌱 Estou estudando programação Back End e Front End, me especializando em .Net Core (C#).
+- 🧑‍💻 Atualmente estou trabalhando no Grupo Herval como Desenvolvedor de Sistemas Pleno.
+- 🚀 Utilizando .NET, .NET Framework, Angular, React, Oracle e MongoDB.
+
 
 <div>
   <a href="https://github.com/PabloMickaelQuevedo">
