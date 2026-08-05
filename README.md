@@ -1,122 +1,191 @@
-<h1 align="center">Hi, I'm Pablo Quevedo 👋</h1>
-<h3 align="center">Tech Lead | Distributed Systems | AI-Driven Engineering</h3>
+<h1 align="center">Pablo Mickael Quevedo</h1>
 
 <p align="center">
-  Building scalable systems, AI-driven workflows, and high-performance engineering teams.
+  <strong>.NET Architect · Distributed Systems · Payments &amp; Industrial IoT</strong>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com/?color=9CDCFE&size=24&center=true&vCenter=true&width=700&lines=Tech+Lead+%7C+Distributed+Systems;AI-Driven+Engineering+%26+Architecture;Building+Scalable+Platforms;Clean+Architecture+%26+DDD" />
+  Architecture and engineering for the systems behind a 14-company group and <strong>R$ 3B</strong> in revenue.<br />
+  Former Tech Lead of the cross-cutting systems team at Grupo Herval — today responsible for the<br />
+  highest-complexity projects across a portfolio of roughly <strong>150 repositories</strong>.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt=".NET 10" />
+  <img src="https://img.shields.io/badge/C%23-14-239120?style=flat-square&logo=csharp&logoColor=white" alt="C# 14" />
+  <img src="https://img.shields.io/badge/Clean%20Architecture-DDD%20%C2%B7%20CQRS-007ec6?style=flat-square" alt="Clean Architecture, DDD, CQRS" />
+  <img src="https://img.shields.io/badge/Kubernetes-Docker-326CE5?style=flat-square&logo=kubernetes&logoColor=white" alt="Kubernetes and Docker" />
+  <img src="https://img.shields.io/badge/PostgreSQL%20%C2%B7%20Oracle%20%C2%B7%20MongoDB-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL, Oracle, MongoDB" />
 </p>
 
 ---
 
-## 👋 About Me
+## Open Source
 
-Tech Lead specialized in designing scalable systems, defining architectural direction, and enabling high-performance engineering teams.
+A set of production libraries extracted from systems that run in production, not from tutorials.
+Each one solves a problem I kept re-solving by hand across repositories.
 
-Currently leading a multidisciplinary team responsible for backend platforms, frontend applications, RPA automation, and AI-driven systems — managing a portfolio of nearly **100 repositories** across distributed and integration-heavy environments.
+| Package | What it solves | Version | Downloads |
+|---|---|---|---|
+| [**PMQ.Domain**](https://github.com/PabloMickaelQuevedo/PMQ.Domain) | DDD building blocks — entities with identity-based equality, aggregate roots, value objects and domain events | [![NuGet](https://img.shields.io/nuget/v/PMQ.Domain?style=flat-square&color=004880&logo=nuget&label=)](https://www.nuget.org/packages/PMQ.Domain) | ![Downloads](https://img.shields.io/nuget/dt/PMQ.Domain?style=flat-square&color=555&label=) |
+| [**PMQ.Mediator**](https://github.com/PabloMickaelQuevedo/PMQ.Mediator) | CQRS mediator with pipeline behaviors, streaming and FluentValidation integration | [![NuGet](https://img.shields.io/nuget/v/PMQ.Mediator?style=flat-square&color=004880&logo=nuget&label=)](https://www.nuget.org/packages/PMQ.Mediator) | ![Downloads](https://img.shields.io/nuget/dt/PMQ.Mediator?style=flat-square&color=555&label=) |
+| [**PMQ.Notifications**](https://github.com/PabloMickaelQuevedo/PMQ.Notifications) | Notification pattern — business rules as data instead of exceptions | [![NuGet](https://img.shields.io/nuget/v/PMQ.Notifications?style=flat-square&color=004880&logo=nuget&label=)](https://www.nuget.org/packages/PMQ.Notifications) | ![Downloads](https://img.shields.io/nuget/dt/PMQ.Notifications?style=flat-square&color=555&label=) |
+| [**PMQ.ErrorHandling**](https://github.com/PabloMickaelQuevedo/PMQ.ErrorHandling) | Centralized ASP.NET Core error handling with RFC 9457 responses | [![NuGet](https://img.shields.io/nuget/v/PMQ.ErrorHandling?style=flat-square&color=004880&logo=nuget&label=)](https://www.nuget.org/packages/PMQ.ErrorHandling) | ![Downloads](https://img.shields.io/nuget/dt/PMQ.ErrorHandling?style=flat-square&color=555&label=) |
+| [**PMQ.Identity**](https://github.com/PabloMickaelQuevedo/PMQ.Identity) | Provider-agnostic authentication — external OIDC or self-issued JWT | [![NuGet](https://img.shields.io/nuget/v/PMQ.Identity?style=flat-square&color=004880&logo=nuget&label=)](https://www.nuget.org/packages/PMQ.Identity) | ![Downloads](https://img.shields.io/nuget/dt/PMQ.Identity?style=flat-square&color=555&label=) |
+
+### How they compose
+
+They are not five unrelated utilities — they snap together into one request lifecycle:
+
+```mermaid
+flowchart TB
+    REQ([HTTP request]) --> AUTH
+
+    subgraph API ["&nbsp;API&nbsp;"]
+        AUTH["PMQ.Identity<br/><i>OIDC · JWT</i>"] --> CTRL[Controller]
+        ERR["PMQ.ErrorHandling<br/><i>RFC 9457 · 400 · 422</i>"]
+    end
+
+    CTRL --> MED
+
+    subgraph APP ["&nbsp;Application&nbsp;"]
+        MED["PMQ.Mediator<br/><i>command · query · pipeline</i>"] --> VAL["Validator<br/><i>transport contract</i>"]
+    end
+
+    VAL --> AGG
+
+    subgraph DOMAIN ["&nbsp;Domain&nbsp;"]
+        AGG["PMQ.Domain<br/><i>Entity · ValueObject · events</i>"] --> NOTIF["PMQ.Notifications<br/><i>broken rules as data</i>"]
+    end
+
+    AGG --> UOW
+
+    subgraph INFRA ["&nbsp;Infrastructure&nbsp;"]
+        UOW["Unit of Work<br/><i>commit, then publish</i>"] --> EVT[Domain event handlers]
+    end
+
+    NOTIF -.-> ERR
+    ERR -.-> RES([HTTP response])
+    UOW --> RES
+
+    classDef pkg fill:#512BD4,stroke:#512BD4,color:#fff
+    classDef plain fill:transparent,stroke:#888,color:#888
+    class AUTH,ERR,MED,AGG,NOTIF pkg
+    class CTRL,VAL,UOW,EVT plain
+```
+
+Domain events are published **after** the commit — a handler must never observe a fact the
+transaction ended up rolling back.
+
+### The design decision behind them
+
+A violated business rule is an **expected outcome**, not exceptional control flow. So entities
+accumulate their failures instead of throwing — which costs less, and reports *every* problem at
+once instead of only the first one:
+
+```csharp
+var order = Order.Create(request.Items);          // never throws
+
+if (order.IsInvalid)
+{
+    notificationContext.AddFrom(order, NotificationType.BusinessRule);   // → HTTP 422
+    return Guid.Empty;
+}
+```
+
+Exceptions stay where they belong: programming errors.
+
+<details>
+<summary><strong>What the client gets back</strong></summary>
+
+<br />
+
+One request, every broken rule — instead of discovering them one deploy at a time:
+
+```json
+{
+  "title": "A business rule validation failed.",
+  "status": 422,
+  "errors": [
+    { "field": "Items", "message": "Item must be at most 200 characters." },
+    { "field": "Items", "message": "Provide at least one item." }
+  ],
+  "traceId": "00-079d247677d55f7d8427fd421daec5f0-a773dd27f85d9bdb-01"
+}
+```
+
+</details>
 
 ---
 
-## 🧠 What I Do
+## What I Build
 
-- Lead multidisciplinary teams across backend, frontend, RPA, and AI systems  
-- Drive architectural decisions aligned with business impact  
-- Design and scale distributed systems and integrations  
-- Enable developer productivity through AI-assisted workflows  
-- Balance technical excellence with pragmatic delivery  
+### Payments
+
+The group's payment hub. Microservices around a central workflow API orchestrating acquiring,
+antifraud, boleto, Pix, a decision rules engine and a historical transaction base for risk
+analysis. Tokenization, authorization and capture, including recurring billing.
+
+Revenue from e-commerce, the mobile app and **200+ stores** flows through it, plus the group's
+own programs: Cartão Hoje, HojePay, iPlace Club and subscriptions.
+
+### Industrial Monitoring
+
+OEE and shop-floor monitoring platform. Sensors over **MQTT**, time series in **TimescaleDB**,
+**Redis**, real time via **SignalR**, and a **PWA** front end with **IndexedDB** that keeps
+operating with the network down.
+
+The rules engine is configurable by the business itself: how to count production, what counts as
+downtime, when to raise an alert.
+
+### Integrations
+
+**SAP** as ERP, with internal SDKs standardizing authentication, OData and sales orders.
+**Apple GSX** and Trade In supporting technical assistance and buyback. **Zendesk** and
+**Emarsys** for support and CRM. And the orders API, where e-commerce, app and stores converge
+before the ERP and logistics.
 
 ---
 
-## ⚙️ Tech & Expertise
+## Agent-Oriented Engineering
 
-- Scalable & Distributed Systems (**.NET**)  
-- Clean Architecture & Domain-Driven Design (**DDD**)  
-- Architecture Governance & Technical Leadership  
-- Integration-heavy & Automation-driven ecosystems  
-- AI-assisted engineering & developer productivity  
+I work in a model where implementation is carried out by agents and each task is driven
+end to end — from technical definition to release — usually several in parallel.
+
+> Implementation stopped being the slow part. Whoever defines the problem better comes out ahead.
+
+---
+
+## Stack
 
 <p>
-  <img src="https://img.shields.io/badge/.NET-Expert-purple" />
-  <img src="https://img.shields.io/badge/Architecture-DDD%20%7C%20Clean-blue" />
-  <img src="https://img.shields.io/badge/AI-Assisted%20Engineering-black" />
-  <img src="https://img.shields.io/badge/Focus-Scalability%20%26%20Automation-green" />
+  <img src="https://skillicons.dev/icons?i=dotnet,cs,docker,kubernetes,postgres,mongodb,mysql,redis,react,angular,git,gitlab&theme=dark" alt="Stack icons" />
 </p>
 
----
-
-## 🚀 Current Focus
-
-Driving the adoption of **Spec-Driven Development** using SpecKit, combined with our internal methodology **AIEL (AI Engineering Loop)**:
-
-- Structured context (AI_CONTEXT, task definitions, decision tracking)  
-- Iterative loops between human + AI (design → build → validate → refine)  
-- AI as an **engineering amplifier**, not a replacement  
-- Strong emphasis on fundamentals, clarity, and testability (TDD mindset)  
-
-Focused on embedding AI deeply into the development lifecycle to:
-
-- Reduce ambiguity in requirements  
-- Increase delivery predictability  
-- Scale engineering output with consistency  
-- Improve long-term maintainability of systems  
+**Platform** · .NET 10 / C# · ASP.NET Core · REST APIs and microservices
+**Architecture** · Clean Architecture · DDD · CQRS · Event-driven
+**Data** · Oracle · PostgreSQL · MongoDB · MySQL · EF Core · Dapper · Dremio · TimescaleDB
+**Infrastructure** · Docker · Kubernetes · GitLab CI/CD · Redis
+**Real time** · MQTT · SignalR
+**Front end** · React · Angular · PWA
+**AI** · LLM integration in .NET
 
 ---
-
-## 🤖 AI & Innovation
-
-Leading the evolution of **Vera**, an internal multi-agent AI platform:
-
-- Built with **React + .NET**  
-- Orchestrated via **n8n + AWS Bedrock (Claude)**  
-- Supports multimodal analysis, repository inspection, and contextual agent routing  
-
-Focused on transforming AI into a **practical engineering tool**, not just experimentation.
-
----
-
-## 📦 Open Source
-
-- [**PMQ.ErrorHandling**](https://www.nuget.org/packages/PMQ.ErrorHandling) – Standardized error handling for ASP.NET Core  
-- [**PMQ.Notifications**](https://www.nuget.org/packages/PMQ.Notifications) – Notification Pattern for .NET  
-
-> Building production-ready libraries inspired by tools like MediatR and FluentValidation.
-
----
-
-## 🧭 Engineering Philosophy
-
-- Strong fundamentals over hype  
-- AI as an amplifier, not a replacement  
-- Process > Frameworks  
-- Clarity reduces complexity  
-- Scalable systems start with good decisions  
-
----
-
-## 📊 GitHub Stats
 
 <p align="center">
-  <img src="https://github-readme-stats-sigma-five.vercel.app/api?username=PabloMickaelQuevedo&show_icons=true&theme=tokyonight" />
+  <img height="160" src="https://github-readme-stats.vercel.app/api?username=PabloMickaelQuevedo&show_icons=true&hide_border=true&theme=transparent&title_color=512BD4&icon_color=512BD4&count_private=true" alt="GitHub stats" />
+  <img height="160" src="https://github-readme-stats.vercel.app/api/top-langs/?username=PabloMickaelQuevedo&layout=compact&hide_border=true&theme=transparent&title_color=512BD4&langs_count=6" alt="Top languages" />
 </p>
 
 ---
 
-## 📫 Connect with Me
+## Connect
 
 <p>
   <a href="https://www.linkedin.com/in/pablomickaelquevedo/" target="_blank">
-    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
   </a>
   <a href="mailto:pablomickaelquevedo@gmail.com">
-    <img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" />
+    <img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Gmail" />
   </a>
-  <a href="mailto:drag-rox@hotmail.com">
-    <img src="https://img.shields.io/badge/Outlook-0078D4?style=for-the-badge&logo=microsoft-outlook&logoColor=white" />
-  </a>
-</p>
-
-<p align="center">
-  <img src="https://user-images.githubusercontent.com/90433833/133912384-f1db2efa-4c4d-4926-9d9b-f8817f017f48.gif" />
 </p>
